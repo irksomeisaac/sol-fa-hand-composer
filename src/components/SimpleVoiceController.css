@@ -1,0 +1,106 @@
+.simple-voice-controller {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.voice-section h3 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+}
+
+.voice-controls {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.voice-button {
+    padding: 15px 25px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.voice-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.voice-button.listening {
+    background-color: #28a745;
+    animation: pulse 1s infinite;
+}
+
+.voice-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.voice-warning {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.last-command {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 15px 0;
+    text-align: center;
+    font-weight: bold;
+}
+
+.current-state {
+    background-color: white;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border: 1px solid #dee2e6;
+}
+
+.current-state p {
+    margin: 5px 0;
+    color: #333;
+}
+
+.commands-list {
+    background-color: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.commands-list h4 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.commands-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.commands-list li {
+    padding: 6px 10px;
+    margin: 4px 0;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+    border-left: 3px solid #007bff;
+}

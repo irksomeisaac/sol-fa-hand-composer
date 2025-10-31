@@ -1,0 +1,163 @@
+.notation-composer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.composer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.current-note-display h2 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.current-note-display p {
+    margin: 0;
+    color: #666;
+    font-style: italic;
+}
+
+.voice-control {
+    text-align: center;
+}
+
+.voice-button {
+    padding: 15px 25px;
+    font-size: 16px;
+    border: 2px solid #007bff;
+    background-color: white;
+    color: #007bff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.voice-button:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.voice-button.listening {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+.voice-button:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    animation: none;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.last-command {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    color: #155724;
+    font-size: 14px;
+}
+
+.main-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.camera-canvas-container {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.camera-canvas-container canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.sign-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.sign-indicator.playing {
+    background-color: rgba(76, 175, 80, 0.9);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.sign-indicator h3 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.playback-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    z-index: 10;
+    animation: pulse 1s infinite;
+}
+
+.controls-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.controls-footer button {
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.controls-footer button:hover {
+    background-color: #5a6268;
+}
+
+.quick-actions {
+    font-size: 14px;
+    color: #666;
+    font-style: italic;
+}
