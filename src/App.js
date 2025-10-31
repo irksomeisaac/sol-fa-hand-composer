@@ -1,5 +1,5 @@
 import React from 'react';
-import DualHandComposer from './components/DualHandComposer';
+import HandDetection from './components/HandDetection';
 import './App.css';
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
         <p>Compose sheet music hands-free: Use hand signs for notes, voice commands to add them to staff</p>
       </header>
       <main>
-        <DualHandComposer />
+        <HandDetection />
       </main>
       <footer>
         <p>🎵 Right hand: Kodály signs for notes | 🖐️ Left hand: Gestures for controls (Peace sign to add notes)</p>
