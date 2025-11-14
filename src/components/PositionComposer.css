@@ -1,0 +1,395 @@
+/* Position-Based Music Composer Styling */
+.position-composer {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.composer-header {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.composer-header h2 {
+    margin: 0 0 10px 0;
+    color: white;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.composer-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2em;
+}
+
+.main-container {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.camera-container {
+    flex: 2;
+    position: relative;
+}
+
+.camera-canvas-container {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.camera-canvas-container canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Zone Overlay Grid (3x3) */
+.zone-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.zone {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.zone.active {
+    background: rgba(255, 215, 0, 0.3);
+    border-color: rgba(255, 215, 0, 0.8);
+    animation: zonePulse 1s infinite;
+}
+
+@keyframes zonePulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+}
+
+.zone-label {
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 5px;
+}
+
+.zone-description {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.progress-bar {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd700, #ffed4e);
+    transition: width 0.1s ease;
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Zone specific styling */
+.zone-topLeft { background: rgba(220, 53, 69, 0.2); } /* Undo - Red */
+.zone-top { background: rgba(0, 123, 255, 0.2); } /* Sharp - Blue */
+.zone-topRight { background: rgba(40, 167, 69, 0.2); } /* Play - Green */
+.zone-left { background: rgba(255, 193, 7, 0.2); } /* Octave Down - Yellow */
+.zone-center { background: rgba(40, 167, 69, 0.2); } /* Add Note - Green */
+.zone-right { background: rgba(255, 193, 7, 0.2); } /* Octave Up - Yellow */
+.zone-bottomLeft { background: rgba(108, 117, 125, 0.2); } /* Clear - Gray */
+.zone-bottom { background: rgba(111, 66, 193, 0.2); } /* Flat - Purple */
+.zone-bottomRight { background: rgba(23, 162, 184, 0.2); } /* Export - Cyan */
+
+/* Hand state indicators */
+.current-note-indicator {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(40, 167, 69, 0.95);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    animation: slideInLeft 0.5s ease;
+}
+
+.current-note-indicator h3 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+}
+
+.current-note-indicator p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.flat-hand-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 215, 0, 0.95);
+    color: #333;
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    animation: slideInRight 0.5s ease;
+}
+
+.flat-hand-indicator h3 {
+    margin: 0 0 5px 0;
+    font-size: 20px;
+}
+
+.flat-hand-indicator p {
+    margin: 0;
+    font-size: 14px;
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Control Panel */
+.control-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.status-panel, .zone-guide, .recent-actions {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.status-panel h3, .zone-guide h3, .recent-actions h3 {
+    margin-top: 0;
+    color: white;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 10px;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.status-grid div {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.zone-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.zone-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    border-left: 4px solid rgba(255, 215, 0, 0.8);
+}
+
+.actions-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+
+.action-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 12px;
+    margin: 5px 0;
+    border-radius: 6px;
+    color: white;
+    font-size: 13px;
+    border-left: 3px solid rgba(40, 167, 69, 0.8);
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.action-time {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    margin-right: 10px;
+}
+
+.action-zone {
+    color: rgba(255, 215, 0, 0.9);
+    font-style: italic;
+    font-size: 11px;
+    margin-left: 10px;
+}
+
+/* Composition Summary */
+.composition-summary {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 25px;
+    margin-top: 30px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.composition-summary h3 {
+    margin-top: 0;
+    color: white;
+    font-size: 1.8em;
+}
+
+.note-sequence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.note-chip {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: noteAppear 0.5s ease;
+}
+
+@keyframes noteAppear {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .camera-canvas-container {
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .position-composer {
+        padding: 15px;
+    }
+    
+    .composer-header {
+        padding: 20px;
+    }
+    
+    .composer-header h2 {
+        font-size: 2em;
+    }
+    
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .zone-label {
+        font-size: 12px;
+    }
+    
+    .zone-description {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .composer-header h2 {
+        font-size: 1.5em;
+    }
+    
+    .main-container {
+        gap: 20px;
+    }
+    
+    .control-panel {
+        gap: 15px;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

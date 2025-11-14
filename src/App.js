@@ -6,14 +6,14 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Sol-fa Music Notation Composer</h1>
-        <p>Compose sheet music hands-free: Use hand signs for notes, voice commands to add them to staff</p>
+        <h1>🎵 Sol-fa Head & Hand Composer</h1>
+        <p>Complete hands-free music creation: Hand signs for notes, head gestures for controls</p>
       </header>
       <main>
         <HandDetection />
       </main>
       <footer>
-        <p>🎵 Right hand: Kodály signs for notes | 🖐️ Left hand: Gestures for controls (Peace sign to add notes)</p>
+        <p>🤟 Kodály signs for notes | ✋ Flat hand in zones for controls | Hold 3 seconds to activate</p>
       </footer>
     </div>
   );

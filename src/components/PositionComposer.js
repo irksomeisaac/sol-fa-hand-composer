@@ -7,36 +7,36 @@ import { recognizeKodalySign } from '../utils/kodalySignsDB';
 import { PositionGestureManager } from '../utils/positionGestures';
 import { audioPlayer } from '../utils/audioUtils';
 import SimpleSheetMusic from './SimpleSheetMusic';
-import './HandDetection.css';
+import './PositionComposer.css';
 
 const CONFIDENCE_THRESHOLD = 0.85;
 const HOLD_FRAMES = 10;
 
-function HandDetection() {
+function PositionComposer() {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const handsRef = useRef(null);
     const cameraRef = useRef(null);
     const gestureManagerRef = useRef(new PositionGestureManager());
     
-    const [detectionState, setDetectionState] = useState({
+    const [handState, setHandState] = useState({
         sign: null,
         confidence: 0,
         debug: null,
-        handPresent: false
+        handPresent: false,
+        isFlatHand: false
+    });
+    
+    const [positionState, setPositionState] = useState({
+        currentZone: null,
+        progress: 0,
+        action: null,
+        triggered: false
     });
     
     const [composition, setComposition] = useState({
         notes: [],
         currentOctave: 4
-    });
-
-    const [positionState, setPositionState] = useState({
-        currentZone: null,
-        progress: 0,
-        action: null,
-        triggered: false,
-        isFlatHand: false
     });
 
     const [recentActions, setRecentActions] = useState([]);
@@ -49,9 +49,9 @@ function HandDetection() {
         
         switch (actionType) {
             case 'ADD_NOTE':
-                if (detectionState.sign) {
+                if (handState.sign) {
                     const newNote = {
-                        note: detectionState.sign,
+                        note: handState.sign,
                         octave: composition.currentOctave,
                         timestamp: Date.now()
                     };
@@ -59,15 +59,15 @@ function HandDetection() {
                         ...prev,
                         notes: [...prev.notes, newNote]
                     }));
-                    actionTaken = `Added ${detectionState.sign.toUpperCase()}${composition.currentOctave}`;
+                    actionTaken = `Added ${handState.sign.toUpperCase()}${composition.currentOctave}`;
                     audioPlayer.playUIFeedback(1200, 200);
                 }
                 break;
                 
             case 'ADD_SHARP':
-                if (detectionState.sign) {
+                if (handState.sign) {
                     const newNote = {
-                        note: detectionState.sign,
+                        note: handState.sign,
                         octave: composition.currentOctave,
                         accidental: 'sharp',
                         timestamp: Date.now()
@@ -76,15 +76,15 @@ function HandDetection() {
                         ...prev,
                         notes: [...prev.notes, newNote]
                     }));
-                    actionTaken = `Added ${detectionState.sign.toUpperCase()}${composition.currentOctave}♯`;
+                    actionTaken = `Added ${handState.sign.toUpperCase()}${composition.currentOctave}♯`;
                     audioPlayer.playUIFeedback(1400, 200);
                 }
                 break;
                 
             case 'ADD_FLAT':
-                if (detectionState.sign) {
+                if (handState.sign) {
                     const newNote = {
-                        note: detectionState.sign,
+                        note: handState.sign,
                         octave: composition.currentOctave,
                         accidental: 'flat',
                         timestamp: Date.now()
@@ -93,7 +93,7 @@ function HandDetection() {
                         ...prev,
                         notes: [...prev.notes, newNote]
                     }));
-                    actionTaken = `Added ${detectionState.sign.toUpperCase()}${composition.currentOctave}♭`;
+                    actionTaken = `Added ${handState.sign.toUpperCase()}${composition.currentOctave}♭`;
                     audioPlayer.playUIFeedback(1000, 200);
                 }
                 break;
@@ -149,7 +149,7 @@ function HandDetection() {
                 zone: position
             }]);
         }
-    }, [detectionState.sign, composition.currentOctave]);
+    }, [handState.sign, composition.currentOctave]);
 
     const playComposition = () => {
         if (composition.notes.length === 0) {
@@ -249,8 +249,7 @@ function HandDetection() {
                         currentZone: gestureResult.position,
                         progress: gestureResult.progress,
                         action: gestureResult.action,
-                        triggered: gestureResult.triggered,
-                        isFlatHand: true
+                        triggered: gestureResult.triggered
                     });
 
                     if (gestureResult.triggered) {
@@ -261,30 +260,32 @@ function HandDetection() {
                         currentZone: null,
                         progress: 0,
                         action: null,
-                        triggered: false,
-                        isFlatHand: gestureManagerRef.current.detectFlatHand(mirroredLandmarks)
+                        triggered: false
                     });
                 }
 
-                setDetectionState({
+                // Update hand state
+                const isFlatHand = gestureManagerRef.current.detectFlatHand(mirroredLandmarks);
+                setHandState({
                     ...recognition,
-                    handPresent: true
+                    handPresent: true,
+                    isFlatHand
                 });
             }
         } else {
             handleSignDetection(null);
-            setDetectionState({
+            setHandState({
                 sign: null,
                 confidence: 0,
                 debug: null,
-                handPresent: false
+                handPresent: false,
+                isFlatHand: false
             });
             setPositionState({
                 currentZone: null,
                 progress: 0,
                 action: null,
-                triggered: false,
-                isFlatHand: false
+                triggered: false
             });
         }
 
@@ -371,135 +372,116 @@ function HandDetection() {
         );
     };
 
-    const renderDebugInfo = useCallback(() => {
-        if (!detectionState.handPresent) {
-            return (
-                <div className="debug-panel">
-                    <div className="status-message">No Hand Detected</div>
-                    <div className="debug-data">
-                        <p>Waiting for hand to appear in frame...</p>
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <div className="debug-panel">
-                <div className="status-message">
-                    {detectionState.sign 
-                        ? `Detected: ${detectionState.sign.toUpperCase()}${composition.currentOctave} (${Math.round(detectionState.confidence * 100)}% confident)`
-                        : "Hand Detected - No Sign Recognized"}
-                </div>
-                <div className="debug-data">
-                    <div className="debug-section">
-                        <h4>Position Control:</h4>
-                        <p>Hand Mode: {positionState.isFlatHand ? '✋ Control Mode' : '🎵 Note Mode'}</p>
-                        <p>Current Zone: {positionState.currentZone || 'None'}</p>
-                        <p>Progress: {Math.round(positionState.progress * 100)}%</p>
-                        {positionState.action && (
-                            <p>Action: {positionState.action.description}</p>
+    return (
+        <div className="position-composer">
+            <div className="composer-header">
+                <h2>🎵 Position-Based Music Composer</h2>
+                <p>Kodály signs for notes • Flat hand in zones for controls • Hold 3 seconds to activate</p>
+            </div>
+            
+            <div className="main-container">
+                <div className="camera-container">
+                    <div className="camera-canvas-container">
+                        <Webcam
+                            ref={webcamRef}
+                            style={{ display: 'none' }}
+                            width={640}
+                            height={480}
+                            mirrored={false}
+                        />
+                        <canvas
+                            ref={canvasRef}
+                            width={640}
+                            height={480}
+                        />
+                        
+                        {/* Zone overlay */}
+                        {renderZoneOverlay()}
+                        
+                        {/* Current note indicator */}
+                        {handState.sign && !handState.isFlatHand && (
+                            <div className="current-note-indicator">
+                                <h3>{handState.sign.toUpperCase()}{composition.currentOctave}</h3>
+                                <p>Make flat hand in zone to control</p>
+                            </div>
                         )}
-                    </div>
-                    
-                    <div className="debug-section">
-                        <h4>Composition:</h4>
-                        <p>Current Octave: {composition.currentOctave}</p>
-                        <p>Notes Added: {composition.notes.length}</p>
-                        {composition.notes.length > 0 && (
-                            <div>
-                                Last notes: {composition.notes.slice(-3).map(n => 
-                                    `${n.note.toUpperCase()}${n.octave}${n.accidental === 'sharp' ? '♯' : n.accidental === 'flat' ? '♭' : ''}`
-                                ).join(', ')}
+                        
+                        {/* Flat hand indicator */}
+                        {handState.isFlatHand && (
+                            <div className="flat-hand-indicator">
+                                <h3>✋ Flat Hand Detected</h3>
+                                {positionState.action && (
+                                    <p>{positionState.action.description}</p>
+                                )}
                             </div>
                         )}
                     </div>
+                </div>
+                
+                <div className="control-panel">
+                    <div className="status-panel">
+                        <h3>📊 Status</h3>
+                        <div className="status-grid">
+                            <div>Hand: {handState.handPresent ? '✅' : '❌'}</div>
+                            <div>Mode: {handState.isFlatHand ? '✋ Control' : '🎵 Note'}</div>
+                            <div>Zone: {positionState.currentZone || 'None'}</div>
+                            <div>Octave: {composition.currentOctave}</div>
+                            <div>Notes: {composition.notes.length}</div>
+                            <div>Progress: {Math.round(positionState.progress * 100)}%</div>
+                        </div>
+                    </div>
                     
-                    <div className="debug-section">
-                        <h4>Recent Actions:</h4>
+                    <div className="zone-guide">
+                        <h3>🗺️ Control Zones</h3>
+                        <div className="zone-grid">
+                            <div className="zone-item">📍 <strong>Center:</strong> Add natural note</div>
+                            <div className="zone-item">⬆️ <strong>Top:</strong> Add sharp (♯)</div>
+                            <div className="zone-item">⬇️ <strong>Bottom:</strong> Add flat (♭)</div>
+                            <div className="zone-item">⬅️ <strong>Left:</strong> Octave down</div>
+                            <div className="zone-item">➡️ <strong>Right:</strong> Octave up</div>
+                            <div className="zone-item">📍 <strong>Top-Left:</strong> Undo</div>
+                            <div className="zone-item">▶️ <strong>Top-Right:</strong> Play</div>
+                            <div className="zone-item">🗑️ <strong>Bottom-Left:</strong> Clear</div>
+                            <div className="zone-item">💾 <strong>Bottom-Right:</strong> Export</div>
+                        </div>
+                    </div>
+                    
+                    <div className="recent-actions">
+                        <h3>📝 Recent Actions</h3>
                         {recentActions.length > 0 ? (
                             <div className="actions-list">
-                                {recentActions.slice(-3).map((action, index) => (
+                                {recentActions.slice(-5).map((action, index) => (
                                     <div key={index} className="action-item">
-                                        <span>{action.time}: {action.action}</span>
+                                        <span className="action-time">{action.time}</span>
+                                        <span className="action-text">{action.action}</span>
+                                        <span className="action-zone">({action.zone})</span>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p>No actions yet</p>
+                            <p>No actions yet. Make a hand sign, then flat hand in a zone!</p>
                         )}
                     </div>
-
-                    <h3>Hand Analysis:</h3>
-                    {detectionState.debug && (
-                        <>
-                            <div className="debug-section">
-                                <h4>Finger Extensions:</h4>
-                                {Object.entries(detectionState.debug.extensions).map(([finger, value]) => (
-                                    <div key={finger} className="debug-item">
-                                        <span>{finger}:</span>
-                                        <div className="debug-bar" style={{width: `${value * 100}%`}}></div>
-                                        <span>{Math.round(value * 100)}%</span>
-                                    </div>
-                                ))}
-                            </div>
-                            {detectionState.sign && frameCountRef.current >= HOLD_FRAMES && (
-                                <div className="debug-section playing">
-                                    <h4>Playing Note:</h4>
-                                    <p>{detectionState.sign.toUpperCase()}{composition.currentOctave}</p>
-                                </div>
-                            )}
-                        </>
-                    )}
                 </div>
-            </div>
-        );
-    }, [detectionState, composition, positionState, recentActions]);
-
-    return (
-        <div className="hand-detection">
-            <div className="main-container">
-                <div className="camera-canvas-container">
-                    <Webcam
-                        ref={webcamRef}
-                        style={{ display: 'none' }}
-                        width={640}
-                        height={480}
-                        mirrored={false}
-                    />
-                    <canvas
-                        ref={canvasRef}
-                        width={640}
-                        height={480}
-                    />
-                    
-                    {/* Zone overlay */}
-                    {renderZoneOverlay()}
-                    
-                    {/* Current note indicator */}
-                    {detectionState.sign && !positionState.isFlatHand && (
-                        <div className="current-note-indicator">
-                            <h3>{detectionState.sign.toUpperCase()}{composition.currentOctave}</h3>
-                            <p>Make flat hand in zone to control</p>
-                        </div>
-                    )}
-                    
-                    {/* Flat hand indicator */}
-                    {positionState.isFlatHand && (
-                        <div className="flat-hand-indicator">
-                            <h3>✋ Control Mode</h3>
-                            {positionState.action && (
-                                <p>{positionState.action.description}</p>
-                            )}
-                        </div>
-                    )}
-                </div>
-                {renderDebugInfo()}
             </div>
             
-            {/* Sheet Music Display */}
             <SimpleSheetMusic notes={composition.notes} />
+            
+            {composition.notes.length > 0 && (
+                <div className="composition-summary">
+                    <h3>🎼 Your Composition ({composition.notes.length} notes)</h3>
+                    <div className="note-sequence">
+                        {composition.notes.map((note, index) => (
+                            <span key={index} className="note-chip">
+                                {note.note.toUpperCase()}{note.octave}
+                                {note.accidental === 'sharp' ? '♯' : note.accidental === 'flat' ? '♭' : ''}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
-export default HandDetection;
+export default PositionComposer;

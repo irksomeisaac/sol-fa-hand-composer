@@ -1,0 +1,243 @@
+.head-hand-composer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.composer-header {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.composer-header h2 {
+    margin: 0 0 10px 0;
+    font-size: 2.2em;
+}
+
+.composer-header p {
+    margin: 0;
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+.main-container {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.camera-container {
+    flex: 2;
+}
+
+.camera-container canvas {
+    width: 100%;
+    height: auto;
+    border: 3px solid #333;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.sign-indicator {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.sign-indicator h3 {
+    margin: 0;
+    font-size: 22px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.head-gesture-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    z-index: 10;
+}
+
+.expression-indicator {
+    position: absolute;
+    top: 80px;
+    right: 15px;
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    z-index: 10;
+}
+
+.control-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.status-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.status-panel h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.status-grid div {
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.gesture-guide {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.gesture-guide h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.gesture-guide ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.gesture-guide li {
+    padding: 8px 12px;
+    margin: 5px 0;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.recent-actions {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.recent-actions h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.actions-list {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.action-item {
+    padding: 6px 10px;
+    margin: 3px 0;
+    background-color: #e8f5e9;
+    border-radius: 4px;
+    font-size: 14px;
+    border-left: 3px solid #28a745;
+}
+
+.manual-controls {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.manual-controls h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.manual-controls button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.manual-controls button:first-of-type {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.manual-controls button:last-of-type {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.manual-controls button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.export-section {
+    text-align: center;
+    margin-top: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.export-section button {
+    padding: 15px 30px;
+    font-size: 18px;
+    background: linear-gradient(135deg, #6f42c1, #5a32a3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.export-section button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+}
