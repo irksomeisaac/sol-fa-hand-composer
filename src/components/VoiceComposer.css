@@ -1,0 +1,242 @@
+/* Clean Voice Composer Styling */
+.voice-composer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: white;
+}
+
+.composer-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.composer-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.composer-header p {
+    margin: 0;
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+.main-interface {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.camera-section {
+    flex: 2;
+}
+
+.camera-container {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.camera-container canvas {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.current-note {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(76, 175, 80, 0.95);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.current-note h2 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+}
+
+.current-note p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.speech-bubble {
+    position: absolute;
+    bottom: 80px;
+    left: 20px;
+    background: rgba(255, 193, 7, 0.95);
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 16px;
+    max-width: 300px;
+    word-wrap: break-word;
+    border: 2px solid #ffc107;
+}
+
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 25px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #ffc107;
+}
+
+.voice-status {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+
+.voice-indicator {
+    background: rgba(40, 167, 69, 0.9);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.voice-indicator.listening {
+    animation: pulse 1.5s infinite;
+}
+
+.voice-indicator.inactive {
+    background: rgba(108, 117, 125, 0.9);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.control-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.voice-commands, .composition-status {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.voice-commands h3, .composition-status h3 {
+    margin-top: 0;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 10px;
+}
+
+.command-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.command-group h4 {
+    margin: 0 0 8px 0;
+    color: #ffd700;
+}
+
+.command-group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.command-group li {
+    padding: 5px 0;
+    font-size: 14px;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.status-grid div {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.last-command {
+    background: rgba(212, 237, 218, 0.9);
+    color: #155724;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.sheet-music-section {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    border-radius: 15px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.sheet-music-section h3 {
+    margin-top: 0;
+    text-align: center;
+    color: #333;
+}
+
+.notes-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.note-chip {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: noteAppear 0.5s ease;
+}
+
+@keyframes noteAppear {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .main-interface {
+        flex-direction: column;
+    }
+    
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+}

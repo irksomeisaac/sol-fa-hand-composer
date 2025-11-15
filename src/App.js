@@ -1,5 +1,5 @@
 import React from 'react';
-import HandDetection from './components/HandDetection';
+import VoiceComposer from './components/VoiceComposer';
 import './App.css';
 
 function App() {
@@ -10,10 +10,10 @@ function App() {
         <p>Complete hands-free music creation: Hand signs for notes, head gestures for controls</p>
       </header>
       <main>
-        <HandDetection />
+        <VoiceComposer />
       </main>
       <footer>
-        <p>🤟 Kodály signs for notes | ✋ Flat hand in zones for controls | Hold 3 seconds to activate</p>
+        <p>🤟 Kodály hand signs for notes | 🎤 Voice commands for composition control</p>
       </footer>
     </div>
   );
