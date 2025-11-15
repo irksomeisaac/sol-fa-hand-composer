@@ -1,19 +1,19 @@
 import React from 'react';
-import VoiceComposer from './components/VoiceComposer';
+import HandDetection from './components/HandDetection';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🎵 Sol-fa Head & Hand Composer</h1>
-        <p>Complete hands-free music creation: Hand signs for notes, head gestures for controls</p>
+        <h1>🎵 Sol-fa hand sign recognition 🎵</h1>
+       
       </header>
       <main>
-        <VoiceComposer />
+        <HandDetection />
       </main>
       <footer>
-        <p>🤟 Kodály hand signs for notes | 🎤 Voice commands for composition control</p>
+        <p>Hold up Sol-fa hand signs to play notes</p>
       </footer>
     </div>
   );

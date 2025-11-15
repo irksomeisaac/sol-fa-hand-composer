@@ -79,9 +79,9 @@ function getHandDirection(landmarks) {
         direction: normalized,
         verticalAngle,
         isPointingUp: verticalAngle > 45,
-        isPointingDown: verticalAngle < -45,
+        isPointingDown: verticalAngle < -60,
         isPointingForward: Math.abs(normalized.z) > Math.max(Math.abs(normalized.x), Math.abs(normalized.y)),
-        isHorizontal: Math.abs(verticalAngle) < 20
+        isHorizontal: Math.abs(verticalAngle) < 35
     };
 }
 

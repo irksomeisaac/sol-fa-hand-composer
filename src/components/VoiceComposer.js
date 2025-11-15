@@ -26,32 +26,27 @@ function VoiceComposer() {
     const [composition, setComposition] = useState({
         notes: [],
         currentOctave: 4,
-        currentAccidental: null // 'sharp', 'flat', or null
+        currentAccidental: null
     });
 
     const [voiceState, setVoiceState] = useState({
-        isListening: false,
+        isActive: false,
         currentSpeech: '',
         lastCommand: null,
-        isSupported: 'webkitSpeechRecognition' in window
+        isSupported: 'webkitSpeechRecognition' in window,
+        needsActivation: true
     });
 
     const lastSignRef = useRef(null);
     const frameCountRef = useRef(0);
+    const isVoiceRunningRef = useRef(false);
 
-    // Simple voice command handler
     const handleVoiceCommand = useCallback((command) => {
-        console.log('Voice command:', command);
+        console.log('Processing voice command:', command);
         
         setVoiceState(prev => ({ ...prev, lastCommand: command }));
 
-        // Clear speech display after showing command
-        setTimeout(() => {
-            setVoiceState(prev => ({ ...prev, currentSpeech: '', lastCommand: null }));
-        }, 2000);
-
         if (command.includes('add') && handState.sign) {
-            // Add note with current accidental
             const newNote = {
                 note: handState.sign,
                 octave: composition.currentOctave,
@@ -61,7 +56,7 @@ function VoiceComposer() {
             setComposition(prev => ({
                 ...prev,
                 notes: [...prev.notes, newNote],
-                currentAccidental: null // Reset accidental after use
+                currentAccidental: null
             }));
             audioPlayer.playUIFeedback(1200, 200);
         }
@@ -105,7 +100,92 @@ function VoiceComposer() {
         else if (command.includes('play')) {
             playComposition();
         }
+
+        // Clear speech display and command after processing
+        setTimeout(() => {
+            setVoiceState(prev => ({ 
+                ...prev, 
+                currentSpeech: '', 
+                lastCommand: null 
+            }));
+        }, 2000);
     }, [handState.sign, composition.currentOctave, composition.currentAccidental]);
+
+    const activateVoice = () => {
+        if (!voiceState.isSupported || isVoiceRunningRef.current) return;
+
+        const recognition = new window.webkitSpeechRecognition();
+        voiceRef.current = recognition;
+        isVoiceRunningRef.current = true;
+        
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+            setVoiceState(prev => ({ 
+                ...prev, 
+                isActive: true,
+                needsActivation: false
+            }));
+            console.log('✅ Voice recognition activated - always listening now');
+        };
+
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            setVoiceState(prev => ({
+                ...prev,
+                currentSpeech: interimTranscript || finalTranscript
+            }));
+
+            if (finalTranscript) {
+                handleVoiceCommand(finalTranscript.toLowerCase().trim());
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.log('Voice error:', event.error);
+            if (event.error === 'not-allowed') {
+                setVoiceState(prev => ({ 
+                    ...prev, 
+                    isActive: false,
+                    needsActivation: true
+                }));
+                isVoiceRunningRef.current = false;
+            }
+        };
+
+        recognition.onend = () => {
+            // Silently restart without UI changes to prevent flickering
+            if (isVoiceRunningRef.current) {
+                setTimeout(() => {
+                    try { 
+                        recognition.start(); 
+                    } catch (e) {
+                        console.log('Silent restart failed');
+                    }
+                }, 1000);
+            }
+        };
+
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error('Voice activation failed:', error);
+            isVoiceRunningRef.current = false;
+        }
+    };
 
     const playComposition = () => {
         if (composition.notes.length === 0) {
@@ -129,7 +209,6 @@ function VoiceComposer() {
             if (currentSign === lastSignRef.current) {
                 frameCountRef.current++;
                 if (frameCountRef.current >= HOLD_FRAMES) {
-                    // Play note with current accidental
                     audioPlayer.playNote(currentSign, composition.currentOctave, composition.currentAccidental);
                 }
             } else {
@@ -194,83 +273,6 @@ function VoiceComposer() {
         ctx.restore();
     }, [handleSignDetection]);
 
-    // Setup voice recognition
-    useEffect(() => {
-        if (!voiceState.isSupported) return;
-
-        const recognition = new window.webkitSpeechRecognition();
-        voiceRef.current = recognition;
-        
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-
-        recognition.onstart = () => {
-            setVoiceState(prev => ({ ...prev, isListening: true }));
-            console.log('Voice recognition started');
-        };
-
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-            let finalTranscript = '';
-
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    finalTranscript += transcript;
-                } else {
-                    interimTranscript += transcript;
-                }
-            }
-
-            setVoiceState(prev => ({
-                ...prev,
-                currentSpeech: interimTranscript || finalTranscript
-            }));
-
-            if (finalTranscript) {
-                handleVoiceCommand(finalTranscript.toLowerCase().trim());
-            }
-        };
-
-        recognition.onerror = (event) => {
-            console.log('Voice error:', event.error);
-            setVoiceState(prev => ({ ...prev, isListening: false }));
-            
-            // Only restart for recoverable errors
-            if (event.error !== 'not-allowed') {
-                setTimeout(() => {
-                    try { recognition.start(); } catch (e) {}
-                }, 2000);
-            }
-        };
-
-        recognition.onend = () => {
-            setVoiceState(prev => ({ ...prev, isListening: false }));
-            setTimeout(() => {
-                try { recognition.start(); } catch (e) {}
-            }, 1000);
-        };
-
-        // Auto-start voice recognition
-        setTimeout(() => {
-            try {
-                recognition.start();
-            } catch (error) {
-                console.error('Voice start failed:', error);
-            }
-        }, 2000);
-
-        return () => {
-            if (voiceRef.current) {
-                try {
-                    voiceRef.current.stop();
-                } catch (e) {}
-            }
-        };
-    }, [handleVoiceCommand]);
-
-    // Setup MediaPipe
     useEffect(() => {
         if (!webcamRef.current) return;
 
@@ -305,11 +307,17 @@ function VoiceComposer() {
         }
 
         return () => {
+            isVoiceRunningRef.current = false;
             if (cameraRef.current) {
                 cameraRef.current.stop();
             }
             if (handsRef.current) {
                 handsRef.current.close();
+            }
+            if (voiceRef.current) {
+                try {
+                    voiceRef.current.stop();
+                } catch (e) {}
             }
             audioPlayer.stopNote();
         };
@@ -356,12 +364,29 @@ function VoiceComposer() {
                             </div>
                         )}
                         
-                        {/* Voice status */}
-                        <div className="voice-status">
-                            <div className={`voice-indicator ${voiceState.isListening ? 'listening' : 'inactive'}`}>
-                                {voiceState.isListening ? '🎤 Listening' : '🎤 Ready'}
+                        {/* Voice activation - one-time only */}
+                        {voiceState.needsActivation ? (
+                            <div className="voice-activation">
+                                <button 
+                                    onClick={activateVoice}
+                                    className="activate-voice-btn"
+                                    disabled={!voiceState.isSupported}
+                                >
+                                    🎤 Activate Voice Control (One Time)
+                                </button>
+                                {!voiceState.isSupported && (
+                                    <p className="voice-warning">
+                                        Voice not supported. Please use Chrome or Edge.
+                                    </p>
+                                )}
                             </div>
-                        </div>
+                        ) : (
+                            <div className="voice-status">
+                                <div className={`voice-indicator ${voiceState.isActive ? 'active' : 'inactive'}`}>
+                                    {voiceState.isActive ? '🎤 Voice Active' : '🎤 Voice Ready'}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -401,7 +426,7 @@ function VoiceComposer() {
                     <div className="composition-status">
                         <h3>📊 Status</h3>
                         <div className="status-grid">
-                            <div>Voice: {voiceState.isListening ? '✅ Active' : '❌ Inactive'}</div>
+                            <div>Voice: {voiceState.isActive ? '✅ Active' : '❌ Inactive'}</div>
                             <div>Hand: {handState.handPresent ? '✅ Detected' : '❌ None'}</div>
                             <div>Current Note: {handState.sign ? handState.sign.toUpperCase() : 'None'}</div>
                             <div>Octave: {composition.currentOctave}</div>
@@ -412,7 +437,7 @@ function VoiceComposer() {
 
                     {voiceState.lastCommand && (
                         <div className="last-command">
-                            Last command: "{voiceState.lastCommand}"
+                            ✓ "{voiceState.lastCommand}"
                         </div>
                     )}
                 </div>
@@ -432,6 +457,20 @@ function VoiceComposer() {
                     </div>
                 ) : (
                     <p>No notes yet - hold up a hand sign and say "Add"!</p>
+                )}
+                
+                {composition.notes.length > 0 && (
+                    <div className="quick-actions">
+                        <button onClick={playComposition} className="play-button">
+                            ▶️ Play Composition
+                        </button>
+                        <button onClick={() => {
+                            setComposition(prev => ({ ...prev, notes: [] }));
+                            audioPlayer.playUIFeedback(400, 300);
+                        }} className="clear-button">
+                            🗑️ Clear All
+                        </button>
+                    </div>
                 )}
             </div>
         </div>

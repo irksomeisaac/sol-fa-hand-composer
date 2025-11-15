@@ -4,9 +4,7 @@ import * as hands from '@mediapipe/hands';
 import * as camera from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { recognizeKodalySign } from '../utils/kodalySignsDB';
-import { PositionGestureManager } from '../utils/positionGestures';
 import { audioPlayer } from '../utils/audioUtils';
-import SimpleSheetMusic from './SimpleSheetMusic';
 import './HandDetection.css';
 
 const CONFIDENCE_THRESHOLD = 0.85;
@@ -17,7 +15,6 @@ function HandDetection() {
     const canvasRef = useRef(null);
     const handsRef = useRef(null);
     const cameraRef = useRef(null);
-    const gestureManagerRef = useRef(new PositionGestureManager());
     
     const [detectionState, setDetectionState] = useState({
         sign: null,
@@ -25,161 +22,9 @@ function HandDetection() {
         debug: null,
         handPresent: false
     });
-    
-    const [composition, setComposition] = useState({
-        notes: [],
-        currentOctave: 4
-    });
-
-    const [positionState, setPositionState] = useState({
-        currentZone: null,
-        progress: 0,
-        action: null,
-        triggered: false,
-        isFlatHand: false
-    });
-
-    const [recentActions, setRecentActions] = useState([]);
 
     const lastSignRef = useRef(null);
     const frameCountRef = useRef(0);
-
-    const executeAction = useCallback((actionType, position) => {
-        let actionTaken = '';
-        
-        switch (actionType) {
-            case 'ADD_NOTE':
-                if (detectionState.sign) {
-                    const newNote = {
-                        note: detectionState.sign,
-                        octave: composition.currentOctave,
-                        timestamp: Date.now()
-                    };
-                    setComposition(prev => ({
-                        ...prev,
-                        notes: [...prev.notes, newNote]
-                    }));
-                    actionTaken = `Added ${detectionState.sign.toUpperCase()}${composition.currentOctave}`;
-                    audioPlayer.playUIFeedback(1200, 200);
-                }
-                break;
-                
-            case 'ADD_SHARP':
-                if (detectionState.sign) {
-                    const newNote = {
-                        note: detectionState.sign,
-                        octave: composition.currentOctave,
-                        accidental: 'sharp',
-                        timestamp: Date.now()
-                    };
-                    setComposition(prev => ({
-                        ...prev,
-                        notes: [...prev.notes, newNote]
-                    }));
-                    actionTaken = `Added ${detectionState.sign.toUpperCase()}${composition.currentOctave}♯`;
-                    audioPlayer.playUIFeedback(1400, 200);
-                }
-                break;
-                
-            case 'ADD_FLAT':
-                if (detectionState.sign) {
-                    const newNote = {
-                        note: detectionState.sign,
-                        octave: composition.currentOctave,
-                        accidental: 'flat',
-                        timestamp: Date.now()
-                    };
-                    setComposition(prev => ({
-                        ...prev,
-                        notes: [...prev.notes, newNote]
-                    }));
-                    actionTaken = `Added ${detectionState.sign.toUpperCase()}${composition.currentOctave}♭`;
-                    audioPlayer.playUIFeedback(1000, 200);
-                }
-                break;
-                
-            case 'OCTAVE_UP':
-                setComposition(prev => ({
-                    ...prev,
-                    currentOctave: Math.min(prev.currentOctave + 1, 7)
-                }));
-                actionTaken = `Octave up to ${Math.min(composition.currentOctave + 1, 7)}`;
-                audioPlayer.playUIFeedback(1300);
-                break;
-                
-            case 'OCTAVE_DOWN':
-                setComposition(prev => ({
-                    ...prev,
-                    currentOctave: Math.max(prev.currentOctave - 1, 2)
-                }));
-                actionTaken = `Octave down to ${Math.max(composition.currentOctave - 1, 2)}`;
-                audioPlayer.playUIFeedback(700);
-                break;
-                
-            case 'UNDO':
-                setComposition(prev => ({
-                    ...prev,
-                    notes: prev.notes.slice(0, -1)
-                }));
-                actionTaken = 'Undid last note';
-                audioPlayer.playUIFeedback(800, 200);
-                break;
-                
-            case 'PLAY':
-                playComposition();
-                actionTaken = 'Playing composition';
-                break;
-                
-            case 'CLEAR':
-                setComposition(prev => ({ ...prev, notes: [] }));
-                actionTaken = 'Cleared composition';
-                audioPlayer.playUIFeedback(400, 300);
-                break;
-                
-            case 'EXPORT':
-                exportComposition();
-                actionTaken = 'Exported composition';
-                break;
-        }
-
-        if (actionTaken) {
-            setRecentActions(prev => [...prev.slice(-4), {
-                action: actionTaken,
-                time: new Date().toLocaleTimeString(),
-                zone: position
-            }]);
-        }
-    }, [detectionState.sign, composition.currentOctave]);
-
-    const playComposition = () => {
-        if (composition.notes.length === 0) {
-            audioPlayer.playUIFeedback(400, 300);
-            return;
-        }
-
-        composition.notes.forEach((noteItem, index) => {
-            setTimeout(() => {
-                const accidental = noteItem.accidental;
-                audioPlayer.playNote(noteItem.note, noteItem.octave, accidental);
-                setTimeout(() => audioPlayer.stopNote(), 450);
-            }, index * 500);
-        });
-    };
-
-    const exportComposition = () => {
-        const exportData = {
-            notes: composition.notes,
-            currentOctave: composition.currentOctave,
-            exportedAt: new Date().toISOString()
-        };
-        
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `sol-fa-composition-${Date.now()}.json`;
-        a.click();
-    };
 
     const handleSignDetection = useCallback((recognition) => {
         const currentSign = recognition?.sign;
@@ -189,7 +34,7 @@ function HandDetection() {
             if (currentSign === lastSignRef.current) {
                 frameCountRef.current++;
                 if (frameCountRef.current >= HOLD_FRAMES) {
-                    audioPlayer.playNote(currentSign, composition.currentOctave);
+                    audioPlayer.playNote(currentSign);
                 }
             } else {
                 frameCountRef.current = 0;
@@ -201,7 +46,7 @@ function HandDetection() {
             lastSignRef.current = null;
             audioPlayer.stopNote();
         }
-    }, [composition.currentOctave]);
+    }, []);
 
     const onResults = useCallback((results) => {
         const canvas = canvasRef.current;
@@ -234,38 +79,8 @@ function HandDetection() {
                     x: 1 - landmark.x
                 }));
 
-                // Check for Kodály signs
                 const recognition = recognizeKodalySign(mirroredLandmarks);
                 handleSignDetection(recognition);
-
-                // Check for flat hand position gestures
-                const gestureResult = gestureManagerRef.current.processPositionGesture(
-                    mirroredLandmarks, 
-                    recognition?.sign
-                );
-
-                if (gestureResult) {
-                    setPositionState({
-                        currentZone: gestureResult.position,
-                        progress: gestureResult.progress,
-                        action: gestureResult.action,
-                        triggered: gestureResult.triggered,
-                        isFlatHand: true
-                    });
-
-                    if (gestureResult.triggered) {
-                        executeAction(gestureResult.action.type, gestureResult.position);
-                    }
-                } else {
-                    setPositionState({
-                        currentZone: null,
-                        progress: 0,
-                        action: null,
-                        triggered: false,
-                        isFlatHand: gestureManagerRef.current.detectFlatHand(mirroredLandmarks)
-                    });
-                }
-
                 setDetectionState({
                     ...recognition,
                     handPresent: true
@@ -279,24 +94,18 @@ function HandDetection() {
                 debug: null,
                 handPresent: false
             });
-            setPositionState({
-                currentZone: null,
-                progress: 0,
-                action: null,
-                triggered: false,
-                isFlatHand: false
-            });
         }
 
         ctx.restore();
-    }, [handleSignDetection, executeAction]);
+    }, [handleSignDetection]);
 
     useEffect(() => {
         if (!webcamRef.current) return;
 
+        // Try different CDN for better reliability
         handsRef.current = new hands.Hands({
             locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                return `https://unpkg.com/@mediapipe/hands@0.4.1646424915/${file}`;
             }
         });
 
@@ -335,42 +144,6 @@ function HandDetection() {
         };
     }, [onResults]);
 
-    const renderZoneOverlay = () => {
-        const zones = [
-            { name: 'UNDO', position: 'topLeft', description: 'Undo last note' },
-            { name: 'SHARP', position: 'top', description: 'Add sharp ♯' },
-            { name: 'PLAY', position: 'topRight', description: 'Play composition' },
-            { name: 'OCTAVE↓', position: 'left', description: 'Octave down' },
-            { name: 'ADD', position: 'center', description: 'Add note' },
-            { name: 'OCTAVE↑', position: 'right', description: 'Octave up' },
-            { name: 'CLEAR', position: 'bottomLeft', description: 'Clear all' },
-            { name: 'FLAT', position: 'bottom', description: 'Add flat ♭' },
-            { name: 'EXPORT', position: 'bottomRight', description: 'Export' }
-        ];
-
-        return (
-            <div className="zone-overlay">
-                {zones.map(zone => (
-                    <div 
-                        key={zone.position}
-                        className={`zone zone-${zone.position} ${positionState.currentZone === zone.position ? 'active' : ''}`}
-                    >
-                        <div className="zone-label">{zone.name}</div>
-                        <div className="zone-description">{zone.description}</div>
-                        {positionState.currentZone === zone.position && (
-                            <div className="progress-bar">
-                                <div 
-                                    className="progress-fill"
-                                    style={{ width: `${positionState.progress * 100}%` }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
     const renderDebugInfo = useCallback(() => {
         if (!detectionState.handPresent) {
             return (
@@ -387,48 +160,10 @@ function HandDetection() {
             <div className="debug-panel">
                 <div className="status-message">
                     {detectionState.sign 
-                        ? `Detected: ${detectionState.sign.toUpperCase()}${composition.currentOctave} (${Math.round(detectionState.confidence * 100)}% confident)`
+                        ? `Detected: ${detectionState.sign.toUpperCase()} (${Math.round(detectionState.confidence * 100)}% confident)`
                         : "Hand Detected - No Sign Recognized"}
                 </div>
                 <div className="debug-data">
-                    <div className="debug-section">
-                        <h4>Position Control:</h4>
-                        <p>Hand Mode: {positionState.isFlatHand ? '✋ Control Mode' : '🎵 Note Mode'}</p>
-                        <p>Current Zone: {positionState.currentZone || 'None'}</p>
-                        <p>Progress: {Math.round(positionState.progress * 100)}%</p>
-                        {positionState.action && (
-                            <p>Action: {positionState.action.description}</p>
-                        )}
-                    </div>
-                    
-                    <div className="debug-section">
-                        <h4>Composition:</h4>
-                        <p>Current Octave: {composition.currentOctave}</p>
-                        <p>Notes Added: {composition.notes.length}</p>
-                        {composition.notes.length > 0 && (
-                            <div>
-                                Last notes: {composition.notes.slice(-3).map(n => 
-                                    `${n.note.toUpperCase()}${n.octave}${n.accidental === 'sharp' ? '♯' : n.accidental === 'flat' ? '♭' : ''}`
-                                ).join(', ')}
-                            </div>
-                        )}
-                    </div>
-                    
-                    <div className="debug-section">
-                        <h4>Recent Actions:</h4>
-                        {recentActions.length > 0 ? (
-                            <div className="actions-list">
-                                {recentActions.slice(-3).map((action, index) => (
-                                    <div key={index} className="action-item">
-                                        <span>{action.time}: {action.action}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p>No actions yet</p>
-                        )}
-                    </div>
-
                     <h3>Hand Analysis:</h3>
                     {detectionState.debug && (
                         <>
@@ -442,10 +177,28 @@ function HandDetection() {
                                     </div>
                                 ))}
                             </div>
+                            <div className="debug-section">
+                                <h4>Hand Direction:</h4>
+                                <p>Vertical Angle: {Math.round(detectionState.debug.handDirection.verticalAngle)}°</p>
+                                <p>Direction: {
+                                    detectionState.debug.handDirection.isPointingUp ? "Up" :
+                                    detectionState.debug.handDirection.isPointingDown ? "Down" :
+                                    detectionState.debug.handDirection.isPointingForward ? "Forward" :
+                                    detectionState.debug.handDirection.isHorizontal ? "Horizontal" : "Other"
+                                }</p>
+                            </div>
+                            <div className="debug-section">
+                                <h4>Palm Orientation:</h4>
+                                <p>
+                                    {detectionState.debug.palmOrientation.isDown ? "Down" : 
+                                     detectionState.debug.palmOrientation.isUp ? "Up" : 
+                                     detectionState.debug.palmOrientation.isSide ? "Side" : "Neutral"}
+                                </p>
+                            </div>
                             {detectionState.sign && frameCountRef.current >= HOLD_FRAMES && (
                                 <div className="debug-section playing">
                                     <h4>Playing Note:</h4>
-                                    <p>{detectionState.sign.toUpperCase()}{composition.currentOctave}</p>
+                                    <p>{detectionState.sign.toUpperCase()}</p>
                                 </div>
                             )}
                         </>
@@ -453,7 +206,7 @@ function HandDetection() {
                 </div>
             </div>
         );
-    }, [detectionState, composition, positionState, recentActions]);
+    }, [detectionState]);
 
     return (
         <div className="hand-detection">
@@ -471,33 +224,14 @@ function HandDetection() {
                         width={640}
                         height={480}
                     />
-                    
-                    {/* Zone overlay */}
-                    {renderZoneOverlay()}
-                    
-                    {/* Current note indicator */}
-                    {detectionState.sign && !positionState.isFlatHand && (
-                        <div className="current-note-indicator">
-                            <h3>{detectionState.sign.toUpperCase()}{composition.currentOctave}</h3>
-                            <p>Make flat hand in zone to control</p>
-                        </div>
-                    )}
-                    
-                    {/* Flat hand indicator */}
-                    {positionState.isFlatHand && (
-                        <div className="flat-hand-indicator">
-                            <h3>✋ Control Mode</h3>
-                            {positionState.action && (
-                                <p>{positionState.action.description}</p>
-                            )}
+                    {detectionState.sign && (
+                        <div className={`sign-indicator ${frameCountRef.current >= HOLD_FRAMES ? 'playing' : ''}`}>
+                            <h2>{detectionState.sign.toUpperCase()}</h2>
                         </div>
                     )}
                 </div>
                 {renderDebugInfo()}
             </div>
-            
-            {/* Sheet Music Display */}
-            <SimpleSheetMusic notes={composition.notes} />
         </div>
     );
 }
