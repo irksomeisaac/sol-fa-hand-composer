@@ -18,9 +18,20 @@
   font-size: 2em;
 }
 
+/* Center main content both horizontally and vertically */
 main {
   flex: 1;
-  padding: 0 20px;
+  display: flex;             
+  align-items: center;       /* vertical centering */
+  justify-content: center;   /* horizontal centering */
+  gap: 50px;                 /* space between image and HandDetection */
+  padding: 0 20px;           /* optional horizontal padding */
+}
+
+/* Resize the hand image */
+.hand-image {
+  width: 200px;   /* adjust size as needed */
+  height: auto;   /* maintain aspect ratio */
 }
 
 footer {
